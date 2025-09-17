@@ -1,0 +1,4 @@
+train: C:/Users/alexk/OneDrive/Документы/GitHub/proj/dataset_pre/images/train
+val:  C:/Users/alexk/OneDrive/Документы/GitHub/proj/dataset_pre/images/train
+nc: 1
+names: ['logo']
