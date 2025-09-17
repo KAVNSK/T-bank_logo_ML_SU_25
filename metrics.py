@@ -54,23 +54,29 @@ def load_ground_truths(images_dir, labels_abs_dir):
 
 def run_inference(model, images_dir, conf=0.001):
     preds = {}
-    images = sorted(Path(images_dir).glob("*.*"))
+    valid_exts = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"}
+
+    images = [p for p in Path(images_dir).glob("*.*") if p.suffix.lower() in valid_exts]
 
     for img_path in tqdm(images, desc="Inference"):
-        results = model(str(img_path), conf=conf, verbose=False)
-        res = results[0]
-        boxes = res.boxes
+        try:
+            results = model(str(img_path), conf=conf, verbose=False)
+            res = results[0]
+            boxes = res.boxes
 
-        pred = []
-        for b in boxes:
-            x1, y1, x2, y2 = b.xyxy[0].tolist()
-            conf_score = float(b.conf.item())
-            cls = int(b.cls.item())
-            pred.append([x1, y1, x2, y2, conf_score, cls])
+            pred = []
+            for b in boxes:
+                x1, y1, x2, y2 = b.xyxy[0].tolist()
+                conf_score = float(b.conf.item())
+                cls = int(b.cls.item())
+                pred.append([x1, y1, x2, y2, conf_score, cls])
 
-        preds[img_path.name] = pred
+            preds[img_path.name] = pred
+        except Exception as e:
+            print(f"[WARNING] Ошибка на файле {img_path.name}: {e}")
+            preds[img_path.name] = []
+
     return preds
-
 
 def compute_metrics(preds, gts, iou_thr=0.5):
     TP = 0
